@@ -1,8 +1,11 @@
 <resources>
     <string name="app_name">Coinz</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="google_web_client_id">175381305723-2c660901vlmcc85hocbpja0vpv7up1ng.apps.googleusercontent.com</string>
+    <string name="title_inventory">Inventory</string>
+    <string name="title_shop">Shop</string>
+    <string name="title_map">Map</string>
+    <string name="title_trading">Trading</string>
+    <string name="title_leaderboard">Leaderboard</string>
 
     <string name="title_activity_login">LoginActivity</string>
     <string name="login_prompt">Login using:</string>
