@@ -9,4 +9,6 @@
 
     <string name="title_activity_login">LoginActivity</string>
     <string name="login_prompt">Login using:</string>
+    <string name="log_out">Log Out</string>
+    <string name="settings">Settings</string>
 </resources>

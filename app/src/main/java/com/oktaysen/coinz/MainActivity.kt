@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
 import com.oktaysen.coinz.backend.*
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -44,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
         navigation.selectedItemId = tabSelected
+
     }
 
     override fun onStart() {
@@ -62,6 +65,27 @@ class MainActivity : AppCompatActivity() {
             navigation.selectedItemId = R.id.navigation_map
         } else {
             super.onBackPressed()
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.actionbar, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.settings -> {
+                return false
+            }
+            R.id.logout -> {
+                Auth().logOut()
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
+                return true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 }
