@@ -25,4 +25,8 @@
     <string name="forgot_password_question">Forgot password?</string>
     <string name="password_again">Password (again)</string>
     <string name="reset_password">Reset Password</string>
+
+    <string name="location_permission_explanation">You need to accept location permissions.</string>
+    <string name="location_permission_not_granted">Could not acquire location permissions.</string>
+    <string name="location_permission_explanation_title">Grant location permissions?</string>
 </resources>
