@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    tools:context=".layout.login.LoginActivity">
+    <TextView
+        android:id="@+id/login_prompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login_prompt"
+        android:textColor="@android:color/primary_text_light"
+        android:textSize="14sp"
+        android:layout_centerHorizontal="true"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/login_prompt"
+        android:layout_margin="8dp"
+        android:layout_centerHorizontal="true">
+        <ImageButton
+            android:id="@+id/login_email"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_email_black_24dp"
+            android:backgroundTint="@color/text_white"
+            android:elevation="4dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@string/login_with_email" />
+        <ImageButton
+            android:id="@+id/login_google"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/google"
+            android:backgroundTint="@color/text_white"
+            android:elevation="4dp"
+            android:layout_marginStart="4dp"
+            android:contentDescription="@string/login_with_google" />
+    </LinearLayout>
+</RelativeLayout>

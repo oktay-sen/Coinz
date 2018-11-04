@@ -12,6 +12,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.oktaysen.coinz.R
 
 class AuthInstance(private val auth: FirebaseAuth) {
+    private val authStateListeners: MutableMap<(Boolean) -> Unit, (FirebaseAuth) -> Unit> = mutableMapOf()
     companion object {
         const val GOOGLE_SIGN_IN: Int = 19475
     }
@@ -22,6 +23,26 @@ class AuthInstance(private val auth: FirebaseAuth) {
 
     fun logOut() {
         auth.signOut()
+    }
+
+    //TODO: Write tests for this.
+    fun addAuthStateListener(listener: (Boolean) -> Unit) {
+        val firebaseListener = { fAuth:FirebaseAuth ->
+            listener(fAuth.currentUser != null)
+        }
+        authStateListeners[listener] = firebaseListener
+        auth.addAuthStateListener(firebaseListener)
+    }
+
+    //TODO: Write tests for this.
+    fun removeAuthStateListener(listener: (Boolean) -> Unit):Boolean {
+        val firebaseListener = authStateListeners[listener]
+        if (firebaseListener != null) {
+            auth.removeAuthStateListener(firebaseListener)
+            authStateListeners.remove(listener)
+            return true
+        }
+        return false
     }
 
     //TODO: Write tests for this.
@@ -46,6 +67,39 @@ class AuthInstance(private val auth: FirebaseAuth) {
                         .addOnCanceledListener(activity) { onComplete?.invoke(false) }
             } catch (e: ApiException) { onComplete?.invoke(false) }
         }
+    }
+
+    fun loginWithEmailPassword(email: String, password: String) {
+        loginWithEmailPassword(email, password, null)
+    }
+
+    //TODO: Write tests for this
+    fun loginWithEmailPassword(email: String, password: String, onResult:((Boolean, String?) -> Unit)?) {
+        auth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener { result -> onResult?.invoke(result.user != null, null) }
+                .addOnFailureListener { exception -> onResult?.invoke(false, exception.message) }
+    }
+
+    fun registerWithEmailPassword(email: String, password: String) {
+        registerWithEmailPassword(email, password, null)
+    }
+
+    //TODO: Write tests for this
+    fun registerWithEmailPassword(email: String, password: String, onResult: ((Boolean, String?) -> Unit)?) {
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener { result -> onResult?.invoke(result.user != null, null) }
+                .addOnFailureListener { exception -> onResult?.invoke(false, exception.message) }
+    }
+
+    fun sendPasswordResetEmail(email: String) {
+        sendPasswordResetEmail(email, null)
+    }
+
+    //TODO: Write tests for this
+    fun sendPasswordResetEmail(email: String, onResult: ((Boolean, String?) -> Unit)?) {
+        auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener { onResult?.invoke(true, null) }
+                .addOnFailureListener { exception -> onResult?.invoke(false, exception.message) }
     }
 }
 

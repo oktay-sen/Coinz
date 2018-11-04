@@ -1,4 +1,4 @@
-package com.oktaysen.coinz
+package com.oktaysen.coinz.layout.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,7 +6,9 @@ import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.*
+import com.oktaysen.coinz.layout.login.LoginActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -51,8 +53,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        Auth().addAuthStateListener(::onAuthStateChange)
+    }
 
-        if (!Auth().isLoggedIn()) {
+    override fun onStop() {
+        super.onStop()
+        Auth().removeAuthStateListener(::onAuthStateChange)
+    }
+
+    private fun onAuthStateChange(isLoggedIn: Boolean) {
+        if (!isLoggedIn) {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             finish()
