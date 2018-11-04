@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Coinz</string>
     <string name="google_web_client_id">175381305723-2c660901vlmcc85hocbpja0vpv7up1ng.apps.googleusercontent.com</string>
+    <string name="mapbox_access_token">pk.eyJ1IjoiZWxla3Ryb2t0YXkiLCJhIjoiY2pvMzNtMGVpMHFudTNxbnN5aG50ajZ6NCJ9.ShbJ-lJqBLmid4lbZ8pQ9A</string>
     <string name="title_inventory">Inventory</string>
     <string name="title_shop">Shop</string>
     <string name="title_map">Map</string>

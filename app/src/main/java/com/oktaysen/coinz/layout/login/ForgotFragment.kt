@@ -9,7 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import com.oktaysen.coinz.R
 
-class LoginForgotFragment: Fragment() {
+class ForgotFragment: Fragment() {
     var onResetListener:((String) -> Unit)? = null
     var onBackListener:(() -> Unit)? = null
 

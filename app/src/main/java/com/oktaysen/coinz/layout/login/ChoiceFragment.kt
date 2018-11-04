@@ -10,7 +10,7 @@ import android.widget.ImageButton
 import com.oktaysen.coinz.R
 import kotlinx.android.synthetic.main.fragment_login_choice.*
 
-class LoginChoiceFragment: Fragment() {
+class ChoiceFragment: Fragment() {
     var onEmailClickListener:(() -> Unit)? = null
     var onGoogleClickListener:(() -> Unit)? = null
 

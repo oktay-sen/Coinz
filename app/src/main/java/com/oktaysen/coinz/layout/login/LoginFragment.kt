@@ -11,7 +11,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import com.oktaysen.coinz.R
 
-class LoginLoginFragment: Fragment() {
+class LoginFragment: Fragment() {
     var onLoginListener:((String, String) -> Unit)? = null
     var onBackListener:(() -> Unit)? = null
     var onRegisterListener:(() -> Unit)? = null

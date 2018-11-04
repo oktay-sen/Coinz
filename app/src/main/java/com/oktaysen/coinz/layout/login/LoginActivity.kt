@@ -11,8 +11,6 @@ import android.widget.Toast
 import com.oktaysen.coinz.layout.main.MainActivity
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Auth
-import android.content.DialogInterface
-import android.content.DialogInterface.BUTTON_NEUTRAL
 import android.support.v7.app.AlertDialog
 
 
@@ -50,13 +48,13 @@ class LoginActivity : AppCompatActivity() {
     private fun setLoginState(newState: LoginState) {
         val fragment: Fragment = when (newState) {
             LoginState.CHOICE -> {
-                val fragment = LoginChoiceFragment()
+                val fragment = ChoiceFragment()
                 fragment.onEmailClickListener = { setLoginState(LoginState.EMAIL_LOGIN) }
                 fragment.onGoogleClickListener = { Auth().attemptLoginWithGoogle(this) }
                 fragment
             }
             LoginState.EMAIL_LOGIN -> {
-                val fragment = LoginLoginFragment()
+                val fragment = LoginFragment()
                 fragment.onBackListener = ::onBackPressed
                 fragment.onRegisterListener = { setLoginState(LoginState.EMAIL_REGISTER) }
                 fragment.onForgotListener = { setLoginState(LoginState.EMAIL_FORGOT) }
@@ -68,7 +66,7 @@ class LoginActivity : AppCompatActivity() {
                 fragment
             }
             LoginState.EMAIL_REGISTER -> {
-                val fragment = LoginRegisterFragment()
+                val fragment = RegisterFragment()
                 fragment.onBackListener = ::onBackPressed
                 fragment.onRegisterListener =  { email, password ->
                     Auth().registerWithEmailPassword(email, password) { success, error ->
@@ -78,7 +76,7 @@ class LoginActivity : AppCompatActivity() {
                 fragment
             }
             LoginState.EMAIL_FORGOT -> {
-                val fragment = LoginForgotFragment()
+                val fragment = ForgotFragment()
                 fragment.onBackListener = ::onBackPressed
                 fragment.onResetListener =  { email ->
                     Auth().sendPasswordResetEmail(email) { success, error ->
@@ -130,9 +128,9 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Auth().onGoogleLoginActivityResult(this, requestCode, resultCode, data) { success ->
+        Auth().onGoogleLoginActivityResult(this, requestCode, resultCode, data) { success, error ->
             if (!success) {
-                Toast.makeText(this, "Google Login failed.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show()
             }
         }
     }

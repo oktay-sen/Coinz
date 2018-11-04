@@ -9,7 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import com.oktaysen.coinz.R
 
-class LoginRegisterFragment: Fragment() {
+class RegisterFragment: Fragment() {
     var onRegisterListener:((String, String) -> Unit)? = null
     var onBackListener:(() -> Unit)? = null
 
