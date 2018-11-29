@@ -23,6 +23,7 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.oktaysen.coinz.R
+import com.oktaysen.coinz.backend.Map
 import timber.log.Timber
 
 class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
@@ -43,6 +44,9 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //TODO: Remove the following line later.
+        setUpCoins()
+
         mapView = view.findViewById(R.id.map_view)
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync {mapboxMap: MapboxMap? ->
@@ -99,11 +103,16 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
 
         val locationComponent = map?.locationComponent
         locationComponent?.activateLocationComponent(context!!, locationEngine!!)
-
         locationComponent?.isLocationComponentEnabled = true
         locationComponent?.renderMode = RenderMode.NORMAL
         locationComponent?.cameraMode = CameraMode.TRACKING
         locationComponent?.forceLocationUpdate(locationEngine?.lastLocation)
+    }
+
+    private fun setUpCoins() {
+        Map().getMap {coins ->
+            Timber.v("Today's coins are: ${coins.toString()}")
+        }
     }
 
     override fun onStart() {

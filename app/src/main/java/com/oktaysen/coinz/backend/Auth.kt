@@ -148,8 +148,8 @@ class AuthInstance(private val auth: FirebaseAuth) {
     }
 }
 
-val instance:AuthInstance = AuthInstance(FirebaseAuth.getInstance())
+val authInstance:AuthInstance = AuthInstance(FirebaseAuth.getInstance())
 
 fun Auth():AuthInstance {
-    return instance
+    return authInstance
 }
