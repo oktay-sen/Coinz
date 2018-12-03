@@ -1,5 +1,6 @@
 package com.oktaysen.coinz.backend.pojo
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
@@ -38,9 +39,9 @@ class UniversityMapResult (
         }
     }
 
-    fun getDate(): Date {
+    fun getDate(): Timestamp {
         val format = SimpleDateFormat("EEE MMM dd yyyy", Locale.UK)
-        return format.parse(`date-generated`)
+        return Timestamp(format.parse(`date-generated`))
     }
 
     fun getCoins(): List<Coin> = features.map { feature -> Coin(
