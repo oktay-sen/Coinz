@@ -49,7 +49,8 @@ class UniversityMapResult (
                 feature.properties.value.toDouble(),
                 Coin.Currency.valueOf(feature.properties.currency),
                 GeoPoint(feature.geometry.coordinates[0], feature.geometry.coordinates[1]),
-                getDate()
+                getDate(),
+                null
         )
     }
 }

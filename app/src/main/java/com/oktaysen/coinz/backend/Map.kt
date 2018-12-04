@@ -3,9 +3,7 @@ package com.oktaysen.coinz.backend
 import android.os.AsyncTask
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldPath
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.*
 import com.google.gson.Gson
 import com.oktaysen.coinz.backend.pojo.Coin
 import com.oktaysen.coinz.backend.pojo.UniversityMapResult
@@ -13,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
 import java.util.*
+
 
 class MapInstance(val auth: FirebaseAuth, val store: FirebaseFirestore, val http: OkHttpClient, val gson: Gson) {
     inner class GetRequest(private val callback: (String?) -> Unit) : AsyncTask<String, Unit, String>() {
@@ -31,6 +30,15 @@ class MapInstance(val auth: FirebaseAuth, val store: FirebaseFirestore, val http
             callback(result)
         }
     }
+
+    val today = Timestamp.now()
+
+    val yesterday = {
+        val cal = Calendar.getInstance()
+        cal.time = today.toDate()
+        cal.add(Calendar.DAY_OF_MONTH, -1)
+        Timestamp(cal.time)
+    }()
 
     fun getMapFromUni(year: Int, month:Int, day: Int, callback: (UniversityMapResult?) -> Unit) {
         Timber.v("Getting the map from university.")
@@ -58,34 +66,20 @@ class MapInstance(val auth: FirebaseAuth, val store: FirebaseFirestore, val http
         getMapFromUni(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), callback)
     }
 
-    fun getMap(callback: (List<Coin>?) -> Unit) {
-        val cal = Calendar.getInstance()
-        val today = Timestamp.now()
-        cal.time = today.toDate()
-        cal.add(Calendar.DAY_OF_MONTH, -1)
-        val yesterday = Timestamp(cal.time)
-        Timber.v("Getting map started.")
+    fun addTodaysCoinsIfMissing() {
         store
                 .collection("coins")
                 .whereGreaterThan("date", yesterday)
                 .whereLessThanOrEqualTo("date", today)
                 .get()
-                .addOnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        callback(null)
-                        Timber.e(task.exception)
+                .addOnCompleteListener { result ->
+                    if (!result.isSuccessful) {
+                        Timber.e(result.exception)
                         return@addOnCompleteListener
                     }
-                    val result = task.result!!
-                    Timber.v("Coins in Firestore: ${result.size()}")
-                    if (result.size() > 0) {
-                        callback(result.toObjects(Coin::class.java))
-                    } else {
-                        getMapFromUni(today.toDate()) { uniMap ->
-                            if (uniMap == null) {
-                                callback(null)
-                                return@getMapFromUni
-                            }
+                    if (result.result!!.isEmpty) {
+                        getMapFromUni(Timestamp.now().toDate()) { uniMap ->
+                            if (uniMap == null) return@getMapFromUni
                             val newCoins = uniMap.getCoins()
                             val batch = store.batch()
                             val ref = store.collection("coins")
@@ -95,15 +89,76 @@ class MapInstance(val auth: FirebaseAuth, val store: FirebaseFirestore, val http
                             batch
                                     .commit()
                                     .addOnCompleteListener { task ->
-                                        if (!task.isSuccessful) {
-                                            callback(null)
-                                            return@addOnCompleteListener
-                                        }
-                                        callback(newCoins)
+                                        if (task.isSuccessful)
+                                            Timber.v("Added ${newCoins.size} coins to Firestore.")
+                                        else
+                                            Timber.e(task.exception)
                                     }
                         }
                     }
                 }
+
+    }
+
+    fun listenToMap(callback: (List<Coin>, List<Coin>, List<Coin>, List<Coin>) -> Unit) {
+        Timber.v("Getting map started.")
+        store
+                .collection("coins")
+                .whereGreaterThan("date", yesterday)
+                .whereLessThanOrEqualTo("date", today)
+                .whereEqualTo("ownerId", null)
+                .addSnapshotListener { snapshot, exception ->
+                    if (exception != null || snapshot == null) {
+                        Timber.e(exception)
+                        return@addSnapshotListener
+                    }
+                    val currentMap = snapshot.toObjects(Coin::class.java)
+                    Timber.v("Coins in Firestore: ${currentMap.size}")
+                    val addedCoins: MutableList<Coin> = mutableListOf()
+                    val modifiedCoins: MutableList<Coin> = mutableListOf()
+                    val removedCoins: MutableList<Coin> = mutableListOf()
+                    snapshot.documentChanges.map {change ->
+                        when (change.type) {
+                            DocumentChange.Type.ADDED -> addedCoins.add(change.document.toObject(Coin::class.java))
+                            DocumentChange.Type.MODIFIED -> modifiedCoins.add(change.document.toObject(Coin::class.java))
+                            DocumentChange.Type.REMOVED -> removedCoins.add(change.document.toObject(Coin::class.java))
+                        }
+                    }
+                    callback(currentMap, addedCoins, modifiedCoins, removedCoins)
+                    if (currentMap.size == 0) {
+                        addTodaysCoinsIfMissing()
+                    }
+                }
+    }
+
+    fun collectCoin(id: String, callback: ((Boolean) -> Unit)?) {
+        if (auth.currentUser == null) {
+            callback?.invoke(false)
+            return
+        }
+        store.collection("coins").document(id).get()
+                .addOnCompleteListener {  result ->
+                    if (!result.isSuccessful || !result.result!!.exists() || auth.currentUser == null) {
+                        callback?.invoke(false)
+                        return@addOnCompleteListener
+                    }
+                    val coin = result.result!!.toObject(Coin::class.java)
+                    if (coin == null || coin.ownerId != null) {
+                        callback?.invoke(false)
+                        return@addOnCompleteListener
+                    }
+                    result.result!!.reference.update("ownerId", auth.currentUser!!.uid)
+                            .addOnCompleteListener { result ->
+                                if (result.isSuccessful)
+                                    callback?.invoke(true)
+                                else
+                                    callback?.invoke(false)
+                            }
+                }
+    }
+
+    fun collectCoin(coin: Coin, callback: ((Boolean) -> Unit)?) {
+        collectCoin(coin.id!!, callback)
     }
 }
 

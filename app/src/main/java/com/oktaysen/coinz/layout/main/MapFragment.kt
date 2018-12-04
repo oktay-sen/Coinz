@@ -5,25 +5,30 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import com.google.firebase.firestore.GeoPoint
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.mapboxsdk.annotations.Marker
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
+import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Map
+import com.oktaysen.coinz.backend.pojo.Coin
 import timber.log.Timber
 
 class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
@@ -36,6 +41,8 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     private var mapView: MapView? = null
     private var map: MapboxMap? = null
     private var locationEngine: LocationEngine? = null
+    private val markers: MutableMap<Marker, Coin> = mutableMapOf()
+    private val markersById: MutableMap<String, Marker> = mutableMapOf()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = layoutInflater.inflate(R.layout.fragment_main_map, container, false)
@@ -45,12 +52,12 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //TODO: Remove the following line later.
-        setUpCoins()
 
         mapView = view.findViewById(R.id.map_view)
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync {mapboxMap: MapboxMap? ->
             map = mapboxMap
+            setUpCoins()
             if (hasLocationPermissions())
                 onLocationPermissionsGranted()
             else {
@@ -110,8 +117,52 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     }
 
     private fun setUpCoins() {
-        Map().getMap {coins ->
-            Timber.v("Today's coins are: ${coins.toString()}")
+        Map().listenToMap { coins, added, changed, removed ->
+            Timber.v("Today's coins are: $coins")
+
+            added.forEach { coin ->
+                val markerOptions = MarkerOptions()
+                        .position(coin.getLatLng())
+                        .title(coin.getTitle())
+                val marker = map?.addMarker(markerOptions)
+                if (marker == null) {
+                    Timber.e("Marker is null!")
+                } else {
+                    markers[marker] = coin
+                    markersById[coin.id!!] = marker
+                    Timber.d("Added marker for $coin")
+                }
+            }
+
+            changed.forEach { coin ->
+                val marker = markersById[coin.id!!] ?: return@forEach
+                markers[marker] = coin
+                marker.position = coin.getLatLng()
+                marker.title = coin.getTitle()
+                Timber.d("Modified marker for $coin")
+            }
+
+            removed.forEach { coin ->
+                val marker = markersById[coin.id!!]
+                markers.remove(marker)
+                markersById.remove(coin.id)
+                marker?.remove()
+                Timber.d("Removed marker for $coin")
+            }
+        }
+
+        //TODO: Remove this listener before release.
+        map!!.setOnMarkerClickListener {marker ->
+            Timber.v("Clicked on ${marker.title}")
+            val coin = markers[marker] ?: return@setOnMarkerClickListener false
+            Timber.v("Clicked on $coin")
+            Map().collectCoin(markers[marker]!!) { success ->
+                Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
+                Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
+                        .setAction("View") {  }
+                        .show()
+            }
+            return@setOnMarkerClickListener true
         }
     }
 
@@ -150,7 +201,18 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
         mapView?.onSaveInstanceState(outState)
     }
 
-    override fun onLocationChanged(location: Location?) { /* No implementation */ }
+    override fun onLocationChanged(location: Location?) {
+        if (location == null) return
+        val here = LatLng(location.longitude, location.latitude)
+        markers.values.filter { here.distanceTo(it.getLatLng()) <= 25 }
+                .forEach { coin -> Map().collectCoin(coin) { success ->
+                    Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
+                    Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
+                            .setAction("View") {  }
+                            .show()
+                } }
+    }
+
     @SuppressLint("MissingPermission")
     override fun onConnected() { locationEngine?.requestLocationUpdates() }
 
