@@ -21,6 +21,8 @@ import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
+import com.mapbox.mapboxsdk.camera.CameraPosition
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
@@ -29,6 +31,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Map
 import com.oktaysen.coinz.backend.pojo.Coin
+import kotlinx.android.synthetic.main.fragment_main_map.*
 import timber.log.Timber
 
 class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
@@ -52,6 +55,23 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //TODO: Remove the following line later.
+
+        current_location_button.setOnClickListener {
+            if (map == null || map?.locationComponent?.isLocationComponentEnabled != true) return@setOnClickListener
+            map?.locationComponent?.cameraMode = CameraMode.TRACKING
+        }
+
+        playable_area_button.setOnClickListener {
+            if (map == null) return@setOnClickListener
+            map?.locationComponent?.cameraMode = CameraMode.NONE
+            map?.animateCamera(CameraUpdateFactory.newCameraPosition(
+                    CameraPosition.Builder()
+                            .target(LatLng(55.944425, -3.188396))
+                            .bearing(0.0)
+                            .zoom(15.0)
+                            .build()
+            ), 750)
+        }
 
         mapView = view.findViewById(R.id.map_view)
         mapView?.onCreate(savedInstanceState)
@@ -202,8 +222,9 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     }
 
     override fun onLocationChanged(location: Location?) {
+        Timber.v("Location is updated!")
         if (location == null) return
-        val here = LatLng(location.longitude, location.latitude)
+        val here = LatLng(location.latitude, location.longitude)
         markers.values.filter { here.distanceTo(it.getLatLng()) <= 25 }
                 .forEach { coin -> Map().collectCoin(coin) { success ->
                     Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
