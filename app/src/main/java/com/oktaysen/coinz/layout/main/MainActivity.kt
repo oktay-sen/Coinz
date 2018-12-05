@@ -119,10 +119,10 @@ class MainActivity : AppCompatActivity() {
         override fun getItem(position: Int): Fragment {
             return when (position) {
                 0 -> InventoryFragment()
-                1 -> InventoryFragment() //TODO: Replace with unique fragment
+                1 -> TradingFragment()
                 2 -> MapFragment()
-                3 -> InventoryFragment() //TODO: Replace with unique fragment
-                4 -> InventoryFragment() //TODO: Replace with unique fragment
+                3 -> ShopFragment()
+                4 -> LeaderboardFragment()
                 else -> throw Error("Expected 0 <= position <= 4, got $position.")
             }
         }
