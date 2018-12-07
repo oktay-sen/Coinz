@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.NullPointerException
 
-class Coin(val id: String?, val value: Double?, val currency: Currency?, val position: GeoPoint?, val date: Timestamp?, val ownerId: String?) {
+class Coin(val id: String?, val value: Double?, val currency: Currency?, val position: GeoPoint?, val date: Timestamp?, val ownerId: String?): Item {
     //Empty constructor for JSON parsing.
     constructor() : this(null, null, null, null, null, null)
 
@@ -24,4 +24,28 @@ class Coin(val id: String?, val value: Double?, val currency: Currency?, val pos
 
     @Exclude
     fun getLatLng() = if (position != null) LatLng(position.longitude, position.latitude) else null
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Coin
+
+        if (id != other.id) return false
+        if (value != other.value) return false
+        if (currency != other.currency) return false
+        if (position != other.position) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id?.hashCode() ?: 0
+        result = 31 * result + (value?.hashCode() ?: 0)
+        result = 31 * result + (currency?.hashCode() ?: 0)
+        result = 31 * result + (position?.hashCode() ?: 0)
+        return result
+    }
+
+
 }

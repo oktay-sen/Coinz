@@ -222,14 +222,16 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     }
 
     override fun onLocationChanged(location: Location?) {
-        Timber.v("Location is updated!")
         if (location == null) return
         val here = LatLng(location.latitude, location.longitude)
         markers.values.filter { here.distanceTo(it.getLatLng()) <= 25 }
                 .forEach { coin -> Map().collectCoin(coin) { success ->
                     Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
                     Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
-                            .setAction("View") {  }
+                            .setAction("View") {
+                                if (activity is MainActivity)
+                                    (activity as MainActivity).navigateTo(R.id.navigation_inventory)
+                            }
                             .show()
                 } }
     }

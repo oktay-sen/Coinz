@@ -6,7 +6,7 @@ import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.*
 
-class UniversityMapResult (
+class UniResult (
         val type: String,
         val `date-generated`: String,
         val `time-generated`: String,
@@ -34,8 +34,8 @@ class UniversityMapResult (
 
     companion object {
         @JvmStatic
-        fun fromString(gson: Gson, str: String): UniversityMapResult {
-            return gson.fromJson(str, UniversityMapResult::class.java)
+        fun fromString(gson: Gson, str: String): UniResult {
+            return gson.fromJson(str, UniResult::class.java)
         }
     }
 

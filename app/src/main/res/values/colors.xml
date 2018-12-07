@@ -7,4 +7,13 @@
 
     <color name="black_overlay">#66000000</color>
     <color name="login_background">#ffa000</color>
+
+    <color name="quidPrimary">#ffc107</color>
+    <color name="quidSecondary">#ffe082</color>
+    <color name="shilPrimary">#4caf50</color>
+    <color name="shilSecondary">#a5d6a7</color>
+    <color name="dolrPrimary">#e91e63</color>
+    <color name="dolrSecondary">#f48fb1</color>
+    <color name="penyPrimary">#cddc39</color>
+    <color name="penySecondary">#e6ee9c</color>
 </resources>

@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         return@OnNavigationItemSelectedListener true
     }
 
-    private fun navigateTo(tabId: Int) {
+    fun navigateTo(tabId: Int) {
         navigation.selectedItemId = tabId
     }
 
