@@ -31,6 +31,10 @@ class InventoryFragment:Fragment() {
 
     var walletSelected: List<Coin> = listOf()
 
+    var walletDone = false
+    var bankDone = false
+    var ratesDone = false
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return layoutInflater.inflate(R.layout.fragment_main_inventory, container, false)
     }
@@ -44,7 +48,10 @@ class InventoryFragment:Fragment() {
         updateButtonVisibility()
         deposit_button.setOnClickListener { Inventory().depositCoins(walletSelected, null) }
 
+        updateRefresh()
         Inventory().listenToWallet { current, _, modified, removed ->
+            walletDone = true
+            updateRefresh()
             if (current.isEmpty())
                 wallet_empty_message.visibility = View.VISIBLE
             else
@@ -64,6 +71,8 @@ class InventoryFragment:Fragment() {
         }
 
         Inventory().listenToBankAccount { current, _, modified, removed ->
+            bankDone = true
+            updateRefresh()
             if (current.isEmpty())
                 bank_empty_message.visibility = View.VISIBLE
             else
@@ -73,9 +82,22 @@ class InventoryFragment:Fragment() {
         }
 
         Inventory().getTodaysDates { rates ->
+            ratesDone = true
+            updateRefresh()
             if (rates == null) return@getTodaysDates
             rates_text.text = getRatesText(rates)
             rates_text.isSelected = true
+        }
+    }
+
+    private fun updateRefresh() {
+        if (walletDone && bankDone && ratesDone && refresh.isRefreshing) {
+            refresh.isRefreshing = false
+            refresh.isEnabled = false
+        }
+        if (!(walletDone && bankDone && ratesDone) && !refresh.isRefreshing){
+            refresh.isEnabled = true
+            refresh.isRefreshing = true
         }
     }
 
