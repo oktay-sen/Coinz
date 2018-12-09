@@ -11,7 +11,7 @@ class UniResult (
         val `date-generated`: String,
         val `time-generated`: String,
         val `approximate-time-remaining`: String,
-        val rates: Rates,
+        val rates: UniRates,
         val features: List<Feature>
 ){
     inner class Feature(
@@ -32,6 +32,13 @@ class UniResult (
         )
     }
 
+    inner class UniRates(
+            val DOLR: Double,
+            val SHIL: Double,
+            val PENY: Double,
+            val QUID: Double
+    )
+
     companion object {
         @JvmStatic
         fun fromString(gson: Gson, str: String): UniResult {
@@ -43,6 +50,8 @@ class UniResult (
         val format = SimpleDateFormat("EEE MMM dd yyyy", Locale.UK)
         return Timestamp(format.parse(`date-generated`))
     }
+
+    fun getDBRates() = Rates(rates.DOLR, rates.SHIL, rates.PENY, rates.QUID, getDate())
 
     fun getCoins(): List<Coin> = features.map { feature -> Coin(
                 feature.properties.id,

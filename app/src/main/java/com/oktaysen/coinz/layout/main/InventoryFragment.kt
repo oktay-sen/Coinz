@@ -1,10 +1,16 @@
 package com.oktaysen.coinz.layout.main
 
+import android.graphics.Typeface
 import android.os.Bundle
 import android.support.design.card.MaterialCardView
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +20,10 @@ import android.widget.Toast
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Inventory
 import com.oktaysen.coinz.backend.pojo.Coin
+import com.oktaysen.coinz.backend.pojo.Coin.Currency.*
 import com.oktaysen.coinz.backend.pojo.Item
+import com.oktaysen.coinz.backend.pojo.Rates
+import kotlinx.android.synthetic.main.fragment_item_coin.view.*
 import kotlinx.android.synthetic.main.fragment_main_inventory.*
 import timber.log.Timber
 
@@ -62,15 +71,48 @@ class InventoryFragment:Fragment() {
             wallet_subtitle.text = "${10 - (Inventory().getDepositedTodayCount()?:0)} deposits left"
             bank_items.adapter = ItemAdapter(current, null, null)
         }
+
+        Inventory().getTodaysDates { rates ->
+            if (rates == null) return@getTodaysDates
+            rates_text.text = getRatesText(rates)
+            rates_text.isSelected = true
+        }
     }
 
-    fun updateButtonVisibility() {
+    private fun updateButtonVisibility() {
         if (walletSelected.isNotEmpty() && 10 - (Inventory().coinsDepositedToday?:0) >= walletSelected.size)
             if (deposit_button.isOrWillBeHidden)
                 deposit_button.show()
         if (walletSelected.isEmpty() || 10 - (Inventory().coinsDepositedToday?:0) < walletSelected.size)
             if (deposit_button.isOrWillBeShown)
                 deposit_button.hide()
+    }
+
+    fun getRatesText(rates: Rates): CharSequence {
+        val currencies: Set<Coin.Currency> = setOf(DOLR, PENY, SHIL, QUID)
+        val result = SpannableStringBuilder()
+        currencies.forEach { currency ->
+            val color = context!!.getColor(when(currency){
+                DOLR -> R.color.dolrPrimary
+                SHIL -> R.color.shilPrimary
+                PENY -> R.color.penyPrimary
+                QUID -> R.color.quidPrimary
+            })
+            val currencyText = "$currency "
+            val value = "%.3f    ".format(when (currency) {
+                DOLR -> rates.dolr
+                SHIL -> rates.shil
+                PENY -> rates.peny
+                QUID -> rates.quid
+            })
+
+            val start = result.length
+            val str = "$currencyText$value"
+            result.append(str)
+            result.setSpan(ForegroundColorSpan(color), start, start + str.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            result.setSpan(StyleSpan(Typeface.BOLD), start, start + currencyText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        return result
     }
 
     inner class ItemAdapter(val items: List<Item>, selectedItems: List<Item>?, val onItemClick: ((List<Item>, Item) -> Unit)?): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -99,16 +141,16 @@ class InventoryFragment:Fragment() {
                     vh.currency.text = coin.currency.toString()
                     vh.amount.text = "%.3f".format(coin.value)
                     vh.imageContainer.setCardBackgroundColor(context!!.getColor(when (coin.currency!!) {
-                        Coin.Currency.DOLR -> R.color.dolrPrimary
-                        Coin.Currency.SHIL -> R.color.shilPrimary
-                        Coin.Currency.PENY -> R.color.penyPrimary
-                        Coin.Currency.QUID -> R.color.quidPrimary
+                        DOLR -> R.color.dolrPrimary
+                        SHIL -> R.color.shilPrimary
+                        PENY -> R.color.penyPrimary
+                        QUID -> R.color.quidPrimary
                     }))
                     vh.container.setCardBackgroundColor(context!!.getColor(when (coin.currency!!) {
-                        Coin.Currency.DOLR -> R.color.dolrSecondary
-                        Coin.Currency.SHIL -> R.color.shilSecondary
-                        Coin.Currency.PENY -> R.color.penySecondary
-                        Coin.Currency.QUID -> R.color.quidSecondary
+                        DOLR -> R.color.dolrSecondary
+                        SHIL -> R.color.shilSecondary
+                        PENY -> R.color.penySecondary
+                        QUID -> R.color.quidSecondary
                     }))
                     vh.selectedOverlay.visibility = if (selected.contains(coin)) View.VISIBLE else View.INVISIBLE
                     if (onItemClick != null)

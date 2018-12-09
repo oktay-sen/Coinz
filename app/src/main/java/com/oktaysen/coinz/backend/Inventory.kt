@@ -110,7 +110,7 @@ class InventoryInstance(val uni: UniInstance, val auth: FirebaseAuth, val store:
                             callback(null)
                             return@getDataFromUni
                         }
-                        val rates = result.rates
+                        val rates = result.getDBRates()
                         store.collection("rates")
                                 .document(dateStr)
                                 .set(rates)

@@ -32,10 +32,9 @@
                     android:layout_height="wrap_content"
                     android:textStyle="italic"
                     android:layout_toEndOf="@id/wallet_title"
-                    android:layout_alignBottom="@id/wallet_title"
+                    android:layout_alignBaseline="@id/wallet_title"
                     android:text="10 deposits left"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginBottom="3dp"/>
+                    android:layout_marginStart="8dp"/>
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="96dp"
@@ -79,6 +78,25 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Account"/>
+
+                <TextView
+                    android:id="@+id/rates_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/bank_title"
+                    android:layout_alignParentEnd="true"
+                    android:layout_toEndOf="@id/bank_title"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    />
+                <!-- TODO: Marquee textview for rates -->
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="96dp"

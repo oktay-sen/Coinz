@@ -9,20 +9,20 @@ import java.util.*
 
 class UniInstance(val http: OkHttpClient, val gson: Gson){
     fun getDataFromUni(year: Int, month:Int, day: Int, callback: (UniResult?) -> Unit) {
-        Timber.v("Getting the map from university.")
+        Timber.v("Getting the data from university.")
 
         val monthStr = if (month < 10) "0$month" else "$month"
         val dayStr = if (day < 10) "0$day" else "$day"
         val url = "http://homepages.inf.ed.ac.uk/stg/coinz/$year/$monthStr/$dayStr/coinzmap.geojson"
-        Timber.v("University map URL: $url")
+        Timber.v("University data URL: $url")
 
         GetRequest(http) { result ->
             if (result == null) {
-                Timber.v("Getting university map unsuccessful.")
+                Timber.v("Getting university data unsuccessful.")
                 callback(null)
                 return@GetRequest
             }
-            Timber.v("Getting university map successful.")
+            Timber.v("Getting university data successful.")
             callback(UniResult.fromString(gson, result))
         }.execute(url)
     }
