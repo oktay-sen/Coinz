@@ -79,7 +79,7 @@ class InventoryInstance(val uni: UniInstance, val auth: FirebaseAuth, val store:
         }
     }
 
-    fun getTodaysDates(callback: (Rates?) -> Unit) {
+    fun getTodaysRates(callback: (Rates?) -> Unit) {
         getRates(Timestamp.now(), callback)
     }
 

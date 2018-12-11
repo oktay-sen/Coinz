@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "175381305723-hgu7au6ovb2orqhma8dsq4sc6ivvjnnk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oktaysen.coinz",
+            "certificate_hash": "9f848f32c831e5ba0fbd05f5b778cc24723407cc"
+          }
+        },
+        {
           "client_id": "175381305723-2c660901vlmcc85hocbpja0vpv7up1ng.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -40,8 +40,6 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
     )
-
-    private var mapView: MapView? = null
     private var map: MapboxMap? = null
     private var locationEngine: LocationEngine? = null
     private val markers: MutableMap<Marker, Coin> = mutableMapOf()
@@ -52,8 +50,10 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
         return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onStart() {
+        super.onStart()
+        map_view.onStart()
+
         //TODO: Remove the following line later.
 
         current_location_button.setOnClickListener {
@@ -73,9 +73,7 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
             ), 750)
         }
 
-        mapView = view.findViewById(R.id.map_view)
-        mapView?.onCreate(savedInstanceState)
-        mapView?.getMapAsync {mapboxMap: MapboxMap? ->
+        map_view.getMapAsync {mapboxMap: MapboxMap? ->
             map = mapboxMap
             setUpCoins()
             if (hasLocationPermissions())
@@ -140,34 +138,36 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
         Map().listenToMap { coins, added, changed, removed ->
             Timber.v("Today's coins are: $coins")
 
-            added.forEach { coin ->
-                val markerOptions = MarkerOptions()
-                        .position(coin.getLatLng())
-                        .title(coin.getTitle())
-                val marker = map?.addMarker(markerOptions)
-                if (marker == null) {
-                    Timber.e("Marker is null!")
-                } else {
-                    markers[marker] = coin
-                    markersById[coin.id!!] = marker
-                    Timber.d("Added marker for $coin")
+            activity?.runOnUiThread {
+                added.forEach { coin ->
+                    val markerOptions = MarkerOptions()
+                            .position(coin.getLatLng())
+                            .title(coin.getTitle())
+                    val marker = map?.addMarker(markerOptions)
+                    if (marker == null) {
+                        Timber.e("Marker is null!")
+                    } else {
+                        markers[marker] = coin
+                        markersById[coin.id!!] = marker
+                        Timber.d("Added marker for $coin")
+                    }
                 }
-            }
 
-            changed.forEach { coin ->
-                val marker = markersById[coin.id!!] ?: return@forEach
-                markers[marker] = coin
-                marker.position = coin.getLatLng()
-                marker.title = coin.getTitle()
-                Timber.d("Modified marker for $coin")
-            }
+                changed.forEach { coin ->
+                    val marker = markersById[coin.id!!] ?: return@forEach
+                    markers[marker] = coin
+                    marker.position = coin.getLatLng()
+                    marker.title = coin.getTitle()
+                    Timber.d("Modified marker for $coin")
+                }
 
-            removed.forEach { coin ->
-                val marker = markersById[coin.id!!]
-                markers.remove(marker)
-                markersById.remove(coin.id)
-                marker?.remove()
-                Timber.d("Removed marker for $coin")
+                removed.forEach { coin ->
+                    val marker = markersById[coin.id!!]
+                    markers.remove(marker)
+                    markersById.remove(coin.id)
+                    marker?.remove()
+                    Timber.d("Removed marker for $coin")
+                }
             }
         }
 
@@ -186,39 +186,39 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        mapView?.onStart()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        map_view.onCreate(savedInstanceState)
     }
 
     override fun onResume() {
         super.onResume()
-        mapView?.onResume()
+        map_view.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        mapView?.onPause()
+        map_view.onPause()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView?.onStop()
+        map_view.onStop()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        mapView?.onLowMemory()
+        map_view.onLowMemory()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        mapView?.onDestroy()
+        map_view.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mapView?.onSaveInstanceState(outState)
+        map_view.onSaveInstanceState(outState)
     }
 
     override fun onLocationChanged(location: Location?) {
@@ -227,12 +227,14 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
         markers.values.filter { here.distanceTo(it.getLatLng()) <= 25 }
                 .forEach { coin -> Map().collectCoin(coin) { success ->
                     Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
-                    Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
-                            .setAction("View") {
-                                if (activity is MainActivity)
-                                    (activity as MainActivity).navigateTo(R.id.navigation_inventory)
-                            }
-                            .show()
+                    activity?.runOnUiThread {
+                        Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
+                                .setAction("View") {
+                                    if (activity is MainActivity)
+                                        (activity as MainActivity).navigateTo(R.id.navigation_inventory)
+                                }
+                                .show()
+                    }
                 } }
     }
 

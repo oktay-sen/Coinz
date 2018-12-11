@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
-import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
@@ -16,16 +15,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import android.widget.Toast
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Inventory
 import com.oktaysen.coinz.backend.pojo.Coin
 import com.oktaysen.coinz.backend.pojo.Coin.Currency.*
 import com.oktaysen.coinz.backend.pojo.Item
 import com.oktaysen.coinz.backend.pojo.Rates
-import kotlinx.android.synthetic.main.fragment_item_coin.view.*
 import kotlinx.android.synthetic.main.fragment_main_inventory.*
-import timber.log.Timber
 
 class InventoryFragment:Fragment() {
 
@@ -39,9 +35,8 @@ class InventoryFragment:Fragment() {
         return layoutInflater.inflate(R.layout.fragment_main_inventory, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
+    override fun onStart() {
+        super.onStart()
         wallet_items.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         bank_items.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
@@ -81,33 +76,41 @@ class InventoryFragment:Fragment() {
             bank_items.adapter = ItemAdapter(current, null, null)
         }
 
-        Inventory().getTodaysDates { rates ->
+        Inventory().getTodaysRates { rates ->
             ratesDone = true
             updateRefresh()
-            if (rates == null) return@getTodaysDates
-            rates_text.text = getRatesText(rates)
-            rates_text.isSelected = true
+            if (rates == null) return@getTodaysRates
+            activity?.runOnUiThread {
+                rates_text.text = getRatesText(rates)
+                rates_text.isSelected = true
+            }
         }
     }
 
     private fun updateRefresh() {
-        if (walletDone && bankDone && ratesDone && refresh.isRefreshing) {
-            refresh.isRefreshing = false
-            refresh.isEnabled = false
-        }
-        if (!(walletDone && bankDone && ratesDone) && !refresh.isRefreshing){
-            refresh.isEnabled = true
-            refresh.isRefreshing = true
+        activity?.runOnUiThread {
+            if (walletDone && bankDone && ratesDone && refresh.isRefreshing) {
+                refresh.isRefreshing = false
+                refresh.isEnabled = false
+            }
+            if (!(walletDone && bankDone && ratesDone) && !refresh.isRefreshing){
+                refresh.isEnabled = true
+                refresh.isRefreshing = true
+            }
         }
     }
 
     private fun updateButtonVisibility() {
-        if (walletSelected.isNotEmpty() && 10 - (Inventory().coinsDepositedToday?:0) >= walletSelected.size)
-            if (deposit_button.isOrWillBeHidden)
-                deposit_button.show()
-        if (walletSelected.isEmpty() || 10 - (Inventory().coinsDepositedToday?:0) < walletSelected.size)
-            if (deposit_button.isOrWillBeShown)
-                deposit_button.hide()
+        activity?.runOnUiThread {
+            if (walletSelected.isNotEmpty() && 10 - (Inventory().coinsDepositedToday
+                            ?: 0) >= walletSelected.size)
+                if (deposit_button.isOrWillBeHidden)
+                    deposit_button.show()
+            if (walletSelected.isEmpty() || 10 - (Inventory().coinsDepositedToday
+                            ?: 0) < walletSelected.size)
+                if (deposit_button.isOrWillBeShown)
+                    deposit_button.hide()
+        }
     }
 
     fun getRatesText(rates: Rates): CharSequence {
