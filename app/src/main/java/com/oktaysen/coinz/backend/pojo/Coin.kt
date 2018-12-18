@@ -47,5 +47,6 @@ class Coin(val id: String?, val value: Double?, val currency: Currency?, val pos
         return result
     }
 
-
+    override fun getType(): Item.Type = Item.Type.COIN
+    override fun getID(): String = id!!
 }

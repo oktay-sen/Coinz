@@ -179,7 +179,10 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
             Map().collectCoin(markers[marker]!!) { success ->
                 Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
                 Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
-                        .setAction("View") {  }
+                        .setAction("View") {
+                            if (activity is MainActivity)
+                                (activity as MainActivity).navigateTo(R.id.navigation_inventory)
+                        }
                         .show()
             }
             return@setOnMarkerClickListener true

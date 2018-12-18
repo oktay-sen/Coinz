@@ -29,4 +29,9 @@
     <string name="location_permission_explanation">You need to accept location permissions.</string>
     <string name="location_permission_not_granted">Could not acquire location permissions.</string>
     <string name="location_permission_explanation_title">Grant location permissions?</string>
+    <string name="trading_nothing_selected">Try finding someone to trade with on the left!</string>
+    <string name="username">Username</string>
+    <string name="username_explanation">Who do you want to trade with?</string>
+    <string name="trade_submit">Trade</string>
+    <string name="check_username">Select</string>
 </resources>
