@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Trading
 import com.oktaysen.coinz.backend.Users
-import com.oktaysen.coinz.backend.pojo.Item
+import com.oktaysen.coinz.backend.pojo.Coin
 import com.oktaysen.coinz.backend.pojo.User
 import com.oktaysen.coinz.layout.util.ItemAdapter
 import kotlinx.android.synthetic.main.fragment_trading_new_trade.*
@@ -20,11 +20,11 @@ import timber.log.Timber
 class NewTradeFragment: Fragment() {
 
     var tradingWith: User? = null
-    var toInventory: List<Item>? = null
-    var fromInventory: List<Item>? = null
+    var toInventory: List<Coin>? = null
+    var fromInventory: List<Coin>? = null
 
-    var fromSelected: List<Item> = listOf()
-    var toSelected: List<Item> = listOf()
+    var fromSelected: List<Coin> = listOf()
+    var toSelected: List<Coin> = listOf()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return layoutInflater.inflate(R.layout.fragment_trading_new_trade, container, false)

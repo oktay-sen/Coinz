@@ -3,15 +3,9 @@ package com.oktaysen.coinz.backend.pojo
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.GeoPoint
-import com.google.firebase.firestore.IgnoreExtraProperties
 import com.mapbox.mapboxsdk.geometry.LatLng
-import timber.log.Timber
-import java.lang.Exception
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.NullPointerException
 
-class Coin(val id: String?, val value: Double?, val currency: Currency?, val position: GeoPoint?, val date: Timestamp?, val ownerId: String?): Item {
+class Coin(val id: String?, val value: Double?, val currency: Currency?, val position: GeoPoint?, val date: Timestamp?, val ownerId: String?) {
     //Empty constructor for JSON parsing.
     constructor() : this(null, null, null, null, null, null)
 
@@ -46,7 +40,4 @@ class Coin(val id: String?, val value: Double?, val currency: Currency?, val pos
         result = 31 * result + (position?.hashCode() ?: 0)
         return result
     }
-
-    override fun getType(): Item.Type = Item.Type.COIN
-    override fun getID(): String = id!!
 }

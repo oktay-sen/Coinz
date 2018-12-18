@@ -10,58 +10,45 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.pojo.Coin
-import com.oktaysen.coinz.backend.pojo.Item
-import com.oktaysen.coinz.layout.main.InventoryFragment
 
-class ItemAdapter(val items: List<Item>, selectedItems: List<Item>?, val context: Context, val onItemClick: ((List<Item>, Item) -> Unit)?): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ItemAdapter(val items: List<Coin>, selectedItems: List<Coin>?, val context: Context, val onItemClick: ((List<Coin>, Coin) -> Unit)?): RecyclerView.Adapter<ItemAdapter.CoinViewHolder>() {
 
     val selected = selectedItems?.toMutableList()?: mutableListOf()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CoinViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        return when(viewType) {
-            0 -> CoinViewHolder(inflater.inflate(R.layout.fragment_item_coin, parent, false))
-            else -> throw Error("Unknown item type")
-        }
+        return CoinViewHolder(inflater.inflate(R.layout.fragment_item_coin, parent, false))
     }
 
     override fun getItemCount(): Int = items.size
 
-    override fun getItemViewType(pos: Int): Int = when(items[pos]) {
-        is Coin -> 0
-        else -> throw Error("Unknown item type")
-    }
-
-    override fun onBindViewHolder(vh: RecyclerView.ViewHolder, pos: Int) {
-        when (vh) {
-            is CoinViewHolder -> {
-                val coin = items[pos] as Coin
-                vh.currency.text = coin.currency.toString()
-                vh.amount.text = "%.3f".format(coin.value)
-                vh.imageContainer.setCardBackgroundColor(context.getColor(when (coin.currency!!) {
-                    Coin.Currency.DOLR -> R.color.dolrPrimary
-                    Coin.Currency.SHIL -> R.color.shilPrimary
-                    Coin.Currency.PENY -> R.color.penyPrimary
-                    Coin.Currency.QUID -> R.color.quidPrimary
-                }))
-                vh.container.setCardBackgroundColor(context.getColor(when (coin.currency) {
-                    Coin.Currency.DOLR -> R.color.dolrSecondary
-                    Coin.Currency.SHIL -> R.color.shilSecondary
-                    Coin.Currency.PENY -> R.color.penySecondary
-                    Coin.Currency.QUID -> R.color.quidSecondary
-                }))
-                vh.selectedOverlay.visibility = if (selected.contains(coin)) View.VISIBLE else View.INVISIBLE
-                if (onItemClick != null)
-                    vh.itemView.setOnClickListener {
-                        if (selected.contains(items[pos])) {
-                            selected.remove(items[pos])
-                            vh.selectedOverlay.visibility = View.INVISIBLE
-                        } else {
-                            selected.add(items[pos])
-                            vh.selectedOverlay.visibility = View.VISIBLE
-                        }
-                        onItemClick.invoke(selected, items[pos])
-                    }
+    override fun onBindViewHolder(vh: CoinViewHolder, pos: Int) {
+        val coin = items[pos]
+        vh.currency.text = coin.currency.toString()
+        vh.amount.text = "%.3f".format(coin.value)
+        vh.imageContainer.setCardBackgroundColor(context.getColor(when (coin.currency!!) {
+            Coin.Currency.DOLR -> R.color.dolrPrimary
+            Coin.Currency.SHIL -> R.color.shilPrimary
+            Coin.Currency.PENY -> R.color.penyPrimary
+            Coin.Currency.QUID -> R.color.quidPrimary
+        }))
+        vh.container.setCardBackgroundColor(context.getColor(when (coin.currency) {
+            Coin.Currency.DOLR -> R.color.dolrSecondary
+            Coin.Currency.SHIL -> R.color.shilSecondary
+            Coin.Currency.PENY -> R.color.penySecondary
+            Coin.Currency.QUID -> R.color.quidSecondary
+        }))
+        vh.selectedOverlay.visibility = if (selected.contains(coin)) View.VISIBLE else View.INVISIBLE
+        if (onItemClick != null) {
+            vh.itemView.setOnClickListener {
+                if (selected.contains(items[pos])) {
+                    selected.remove(items[pos])
+                    vh.selectedOverlay.visibility = View.INVISIBLE
+                } else {
+                    selected.add(items[pos])
+                    vh.selectedOverlay.visibility = View.VISIBLE
+                }
+                onItemClick.invoke(selected, items[pos])
             }
         }
     }

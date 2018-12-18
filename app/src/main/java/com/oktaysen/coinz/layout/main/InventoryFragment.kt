@@ -2,10 +2,8 @@ package com.oktaysen.coinz.layout.main
 
 import android.graphics.Typeface
 import android.os.Bundle
-import android.support.design.card.MaterialCardView
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
@@ -13,16 +11,12 @@ import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.TextView
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Inventory
 import com.oktaysen.coinz.backend.pojo.Coin
 import com.oktaysen.coinz.backend.pojo.Coin.Currency.*
-import com.oktaysen.coinz.backend.pojo.Item
 import com.oktaysen.coinz.backend.pojo.Rates
 import com.oktaysen.coinz.layout.util.ItemAdapter
-import kotlinx.android.synthetic.main.fragment_item_coin.view.*
 import kotlinx.android.synthetic.main.fragment_main_inventory.*
 
 class InventoryFragment:Fragment() {

@@ -9,8 +9,8 @@ class Trade(
         val toId: String?,
         val fromUsername: String?,
         val toUsername: String?,
-        val fromItemIds: List<String>,
-        val toItemIds: List<String>,
+        val fromCoinIds: List<String>,
+        val toCoinIds: List<String>,
         val date: Timestamp?,
         val state: State): Serializable {
     constructor(): this(null, null, null, null, null, listOf(), listOf(), null, State.PENDING)
