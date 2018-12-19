@@ -3,6 +3,8 @@ package com.oktaysen.coinz.layout.main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.location.Location
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -18,6 +20,7 @@ import com.mapbox.android.core.location.LocationEngineListener
 import com.mapbox.android.core.location.LocationEnginePriority
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.permissions.PermissionsListener
+import com.mapbox.mapboxsdk.annotations.IconFactory
 import com.mapbox.mapboxsdk.annotations.Marker
 import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraPosition
@@ -137,10 +140,26 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
             Timber.v("Today's coins are: $coins")
 
             activity?.runOnUiThread {
+
+                val dolrIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_dolr)!!)
+                val penyIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_peny)!!)
+                val quidIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_quid)!!)
+                val shilIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_shil)!!)
+
+                val getIcon = {currency: Coin.Currency? ->
+                    when(currency) {
+                        Coin.Currency.DOLR -> dolrIcon
+                        Coin.Currency.SHIL -> shilIcon
+                        Coin.Currency.PENY -> penyIcon
+                        Coin.Currency.QUID -> quidIcon
+                        null -> quidIcon
+                }}
+
                 added.forEach { coin ->
                     val markerOptions = MarkerOptions()
                             .position(coin.getLatLng())
                             .title(coin.getTitle())
+                            .icon(getIcon(coin.currency))
                     val marker = map?.addMarker(markerOptions)
                     if (marker == null) {
                         Timber.e("Marker is null!")
@@ -156,6 +175,7 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
                     markers[marker] = coin
                     marker.position = coin.getLatLng()
                     marker.title = coin.getTitle()
+                    marker.icon = getIcon(coin.currency)
                     Timber.d("Modified marker for $coin")
                 }
 
@@ -250,5 +270,17 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
         Timber.v("Location permission granted?: $granted")
         if (granted) onLocationPermissionsGranted()
         else Toast.makeText(context, R.string.location_permission_not_granted, Toast.LENGTH_LONG).show()
+    }
+
+    //From: https://stackoverflow.com/a/35574775
+    private fun getBitmap(drawableRes: Int): Bitmap? {
+        val drawable = context?.getDrawable(drawableRes) ?: return null
+        val canvas = Canvas()
+        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        canvas.setBitmap(bitmap)
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable. intrinsicHeight)
+        drawable.draw(canvas)
+
+        return bitmap
     }
 }
