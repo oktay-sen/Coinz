@@ -34,30 +34,34 @@ class TradingFragment:Fragment() {
         new_trade_button.setOnClickListener { openNewTrade() }
 
         contacts.layoutManager = LinearLayoutManager(context!!, LinearLayoutManager.VERTICAL, false)
+        refreshTrades()
+    }
+
+    fun refreshTrades() {
         Trading().getTrades { usernames, trades ->
             if (usernames == null || trades == null) return@getTrades
             contacts.adapter = ContactAdapter(usernames) {pos ->
-                openTrades(usernames[pos], trades[usernames[pos]]!!)
+                openTrades(usernames[pos], trades[usernames[pos]]!!.map { it.tradeId!! })
             }
         }
     }
 
-    private fun openDefault() {
+    fun openDefault() {
         fragmentManager!!.beginTransaction()
                 .replace(R.id.trade_container, DefaultFragment())
                 .commit()
     }
 
-    private fun openNewTrade() {
+    fun openNewTrade() {
         fragmentManager!!.beginTransaction()
                 .replace(R.id.trade_container, NewTradeFragment())
                 .commit()
     }
 
-    private fun openTrades(username: String, trades: List<Trade>) {
+    fun openTrades(username: String, trades: List<String>) {
         fragmentManager!!.beginTransaction()
                 .replace(R.id.trade_container, TradesFragment.newInstance(username, trades))
-                .commit()
+        .commit()
     }
 
     inner class ContactAdapter(val contacts: List<String>, val onContactClick: (Int) -> Unit): RecyclerView.Adapter<ContactAdapter.ViewHolder>() {

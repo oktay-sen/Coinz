@@ -28,7 +28,7 @@ class AuthInstance(private val auth: FirebaseAuth) {
     }
 
     //TODO: Write tests for this.
-    fun addAuthStateListener(listener: (Boolean) -> Unit) {
+    fun addAuthStateListener(listener: (isLoggedIn: Boolean) -> Unit) {
         val firebaseListener = { fAuth:FirebaseAuth ->
             listener(fAuth.currentUser != null)
         }
@@ -37,7 +37,7 @@ class AuthInstance(private val auth: FirebaseAuth) {
     }
 
     //TODO: Write tests for this.
-    fun removeAuthStateListener(listener: (Boolean) -> Unit):Boolean {
+    fun removeAuthStateListener(listener: (isLoggedIn: Boolean) -> Unit):Boolean {
         val firebaseListener = authStateListeners[listener]
         if (firebaseListener != null) {
             auth.removeAuthStateListener(firebaseListener)
@@ -58,7 +58,7 @@ class AuthInstance(private val auth: FirebaseAuth) {
     }
 
     //TODO: Write tests for this.
-    fun onGoogleLoginActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?, onComplete:((Boolean, String?) -> Unit)?) {
+    fun onGoogleLoginActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?, onComplete:((success: Boolean, error: String?) -> Unit)?) {
         if (requestCode == GOOGLE_SIGN_IN) {
             try {
                 val account = GoogleSignIn.getSignedInAccountFromIntent(data).getResult(ApiException::class.java)!!
@@ -89,7 +89,7 @@ class AuthInstance(private val auth: FirebaseAuth) {
     }
 
     //TODO: Write tests for this
-    fun loginWithEmailPassword(email: String, password: String, onResult:((Boolean, String?) -> Unit)?) {
+    fun loginWithEmailPassword(email: String, password: String, onResult:((success: Boolean, error: String?) -> Unit)?) {
         auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener { result ->
                     Timber.i("Email Login: %s", result.user.email)
@@ -110,7 +110,7 @@ class AuthInstance(private val auth: FirebaseAuth) {
     }
 
     //TODO: Write tests for this
-    fun registerWithEmailPassword(email: String, password: String, onResult: ((Boolean, String?) -> Unit)?) {
+    fun registerWithEmailPassword(email: String, password: String, onResult: ((success: Boolean, error: String?) -> Unit)?) {
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener { result ->
                     Timber.i("Email Register: %s", result.user.email)
@@ -131,7 +131,7 @@ class AuthInstance(private val auth: FirebaseAuth) {
     }
 
     //TODO: Write tests for this
-    fun sendPasswordResetEmail(email: String, onResult: ((Boolean, String?) -> Unit)?) {
+    fun sendPasswordResetEmail(email: String, onResult: ((success: Boolean, error: String?) -> Unit)?) {
         auth.sendPasswordResetEmail(email)
                 .addOnSuccessListener { result ->
                     Timber.i("Email Password Reset: %s", email)

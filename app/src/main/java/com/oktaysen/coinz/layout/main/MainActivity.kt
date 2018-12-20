@@ -116,11 +116,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    var tradingFragmentInstance = TradingFragment()
+
     inner class TabPagerAdapter(fm: FragmentManager):FragmentStatePagerAdapter(fm) {
         override fun getItem(position: Int): Fragment {
             return when (position) {
                 0 -> InventoryFragment()
-                1 -> TradingFragment()
+                1 -> {
+                    tradingFragmentInstance = TradingFragment()
+                    tradingFragmentInstance
+                }
                 2 -> MapFragment()
                 3 -> ShopFragment()
                 4 -> LeaderboardFragment()

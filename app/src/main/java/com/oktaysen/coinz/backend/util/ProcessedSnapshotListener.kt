@@ -6,7 +6,9 @@ import com.google.firebase.firestore.QuerySnapshot
 import timber.log.Timber
 
 // A thin wrapper around a Firestore SnapshotListener that summarizes the changes.
-inline fun <reified T:Any>ProcessedSnapshotListener(crossinline callback:(List<T>, List<T>, List<T>, List<T>) -> Unit): (QuerySnapshot?, FirebaseFirestoreException?) -> Unit {
+inline fun <reified T:Any>ProcessedSnapshotListener(
+        crossinline callback:(current: List<T>, added: List<T>, modified: List<T>, removed: List<T>) -> Unit
+): (QuerySnapshot?, FirebaseFirestoreException?) -> Unit {
     return { snapshot, exception ->
         if (exception != null || snapshot == null) {
             Timber.e(exception)
