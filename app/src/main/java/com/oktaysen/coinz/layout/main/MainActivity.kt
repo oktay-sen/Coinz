@@ -23,10 +23,8 @@ class MainActivity : AppCompatActivity() {
         val tabId = item.itemId
         val position = when (tabId) {
             R.id.navigation_inventory -> 0
-            R.id.navigation_trading -> 1
-            R.id.navigation_map -> 2
-            R.id.navigation_shop -> 3
-            R.id.navigation_leaderboard -> 4
+            R.id.navigation_map -> 1
+            R.id.navigation_trading -> 2
             else -> return@OnNavigationItemSelectedListener false
         }
         tab_pager.setCurrentItem(position, true)
@@ -43,19 +41,17 @@ class MainActivity : AppCompatActivity() {
 
         tab_pager.adapter = TabPagerAdapter(supportFragmentManager)
         tab_pager.swipingEnabled = false
-        tab_pager.offscreenPageLimit = 5
+        tab_pager.offscreenPageLimit = 3
         tab_pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(p0: Int) {}
             override fun onPageScrolled(p0: Int, p1: Float, p2: Int) {}
             override fun onPageSelected(position: Int) {
                 val tabId = when (position) {
                     0 -> R.id.navigation_inventory
-                    1 -> R.id.navigation_trading
-                    2 -> R.id.navigation_map
-                    3 -> R.id.navigation_shop
-                    4 -> R.id.navigation_leaderboard
+                    1 -> R.id.navigation_map
+                    2 -> R.id.navigation_trading
                     else -> {
-                        Timber.e("Expected 0 <= position <= 4, got $position.")
+                        Timber.e("Expected 0 <= position <= 2, got $position.")
                         return
                     }
                 }
@@ -122,18 +118,16 @@ class MainActivity : AppCompatActivity() {
         override fun getItem(position: Int): Fragment {
             return when (position) {
                 0 -> InventoryFragment()
-                1 -> {
+                1 -> MapFragment()
+                2 -> {
                     tradingFragmentInstance = TradingFragment()
                     tradingFragmentInstance
                 }
-                2 -> MapFragment()
-                3 -> ShopFragment()
-                4 -> LeaderboardFragment()
-                else -> throw Error("Expected 0 <= position <= 4, got $position.")
+                else -> throw Error("Expected 0 <= position <= 2, got $position.")
             }
         }
 
-        override fun getCount(): Int = 5
+        override fun getCount(): Int = 3
 
     }
 }
