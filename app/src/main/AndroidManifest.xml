@@ -31,7 +31,8 @@
             android:label="@string/app_name"
             android:theme="@style/FullscreenTheme"
             android:noHistory="true"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"/>
     </application>
 
 </manifest>

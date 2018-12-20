@@ -1,15 +1,12 @@
 package com.oktaysen.coinz.layout.login
 
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
 import com.oktaysen.coinz.R
+import kotlinx.android.synthetic.main.fragment_login_login.*
 
 class LoginFragment: Fragment() {
     var onLoginListener:((String, String) -> Unit)? = null
@@ -19,40 +16,41 @@ class LoginFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_login_login, container, false)
-        view.findViewById<Button>(R.id.back_button).setOnClickListener { onBackListener?.invoke() }
-        view.findViewById<Button>(R.id.register_button).setOnClickListener { onRegisterListener?.invoke() }
-        view.findViewById<Button>(R.id.login_forgot).setOnClickListener { onForgotListener?.invoke() }
+        return inflater.inflate(R.layout.fragment_login_login, container, false)
+    }
 
-        val emailInput = view.findViewById<EditText>(R.id.login_input_email)
-        emailInput.setOnEditorActionListener { _, _, _ ->
-            emailInput.error = null
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        back_button.setOnClickListener { onBackListener?.invoke() }
+        register_button.setOnClickListener { onRegisterListener?.invoke() }
+        login_forgot.setOnClickListener { onForgotListener?.invoke() }
+
+        login_input_email.setOnEditorActionListener { _, _, _ ->
+            login_input_email.error = null
             return@setOnEditorActionListener false
         }
 
-        val passwordInput = view.findViewById<EditText>(R.id.login_input_password)
-        passwordInput.setOnEditorActionListener { _, _, _ ->
-            passwordInput.error = null
+        login_input_password.setOnEditorActionListener { _, _, _ ->
+            login_input_password.error = null
             return@setOnEditorActionListener false
         }
 
-        view.findViewById<Button>(R.id.login_button).setOnClickListener {
+        login_button.setOnClickListener {
             var canLogin = true
-            if (emailInput.text.length <=3 || !emailInput.text.contains("@")) {
+            if (login_input_email.text.length <=3 || !login_input_email.text.contains("@")) {
                 canLogin = false
-                emailInput.error = "Enter a valid email"
+                login_input_email.error = "Enter a valid email"
             } else {
-                emailInput.error = null
+                login_input_email.error = null
             }
-            if (passwordInput.text.isEmpty()) {
+            if (login_input_password.text.isEmpty()) {
                 canLogin = false
-                passwordInput.error = "Enter a password"
+                login_input_password.error = "Enter a password"
             } else {
-                passwordInput.error = null
+                login_input_password.error = null
             }
             if (canLogin)
-                onLoginListener?.invoke(emailInput.text.toString(), passwordInput.text.toString())
+                onLoginListener?.invoke(login_input_email.text.toString(), login_input_password.text.toString())
         }
-        return view
     }
 }

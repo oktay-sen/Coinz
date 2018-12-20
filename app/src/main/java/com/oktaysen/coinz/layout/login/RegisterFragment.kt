@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import com.oktaysen.coinz.R
+import kotlinx.android.synthetic.main.fragment_login_register.*
 
 class RegisterFragment: Fragment() {
     var onRegisterListener:((String, String) -> Unit)? = null
@@ -15,52 +16,53 @@ class RegisterFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_login_register, container, false)
-        view.findViewById<Button>(R.id.back_button).setOnClickListener { onBackListener?.invoke() }
+        return inflater.inflate(R.layout.fragment_login_register, container, false)
+    }
 
-        val emailInput = view.findViewById<EditText>(R.id.login_input_email)
-        emailInput.setOnEditorActionListener { _, _, _ ->
-            emailInput.error = null
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        back_button.setOnClickListener { onBackListener?.invoke() }
+
+        login_input_email.setOnEditorActionListener { _, _, _ ->
+            login_input_email.error = null
             return@setOnEditorActionListener false
         }
 
-        val passwordInput = view.findViewById<EditText>(R.id.login_input_password)
-        passwordInput.setOnEditorActionListener { _, _, _ ->
-            passwordInput.error = null
+        login_input_password.setOnEditorActionListener { _, _, _ ->
+            login_input_password.error = null
             return@setOnEditorActionListener false
         }
 
-        val passwordInput2 = view.findViewById<EditText>(R.id.login_input_password_again)
-        passwordInput2.setOnEditorActionListener { _, _, _ ->
-            passwordInput2.error = null
+        login_input_password_again.setOnEditorActionListener { _, _, _ ->
+            login_input_password_again.error = null
             return@setOnEditorActionListener false
         }
 
-        view.findViewById<Button>(R.id.register_button).setOnClickListener {
+        register_button.setOnClickListener {
             var canRegister = true
-            if (emailInput.text.length <=3 || !emailInput.text.contains("@")) {
+            if (login_input_email.text.length <=3 || !login_input_email.text.contains("@")) {
                 canRegister = false
-                emailInput.error = "Enter a valid email"
+                login_input_email.error = "Enter a valid email"
             } else {
-                emailInput.error = null
+                login_input_email.error = null
             }
-            if (passwordInput.text.isEmpty()) {
+            if (login_input_password.text.isEmpty()) {
                 canRegister = false
-                passwordInput.error = "Enter a password"
-            } else if (passwordInput.text.length < 8) {
-                passwordInput.error = "Password must be at least 8 characters"
+                login_input_password.error = "Enter a password"
+            } else if (login_input_password.text.length < 8) {
+                login_input_password.error = "Password must be at least 8 characters"
             } else {
-                passwordInput.error = null
+                login_input_password.error = null
             }
-            if (passwordInput.text.toString() != passwordInput2.text.toString()) {
+            if (login_input_password.text.toString() != login_input_password_again.text.toString()) {
                 canRegister = false
-                passwordInput2.error = "Passwords don't match"
+                login_input_password_again.error = "Passwords don't match"
             } else {
-                passwordInput2.error = null
+                login_input_password_again.error = null
             }
             if (canRegister)
-                onRegisterListener?.invoke(emailInput.text.toString(), passwordInput.text.toString())
+                onRegisterListener?.invoke(login_input_email.text.toString(), login_input_password.text.toString())
         }
-        return view
     }
 }

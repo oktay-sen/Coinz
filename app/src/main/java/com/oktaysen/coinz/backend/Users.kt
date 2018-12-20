@@ -33,13 +33,13 @@ class UsersInstance(val auth: FirebaseAuth, val store: FirebaseFirestore) {
                         return@addOnCompleteListener
                     }
                     user.id = snapshot.id
-                    callback(user) //TODO: Combine coins and items
+                    callback(user)
                 }
     }
 
-    fun getOrCreateCurrentUser(callback: (User?) -> Unit) {
+    fun getOrCreateCurrentUser(callback: (user: User?, isNewUser: Boolean) -> Unit) {
         if (auth.currentUser == null) {
-            callback(null)
+            callback(null, false)
             return
         }
 
@@ -51,7 +51,7 @@ class UsersInstance(val auth: FirebaseAuth, val store: FirebaseFirestore) {
                 .addOnCompleteListener {result ->
                     if (!result.isSuccessful) {
                         Timber.e(result.exception)
-                        callback(null)
+                        callback(null, false)
                         return@addOnCompleteListener
                     }
                     if (!result.result!!.exists()) {
@@ -61,21 +61,56 @@ class UsersInstance(val auth: FirebaseAuth, val store: FirebaseFirestore) {
                                 .addOnCompleteListener { result ->
                                     if (!result.isSuccessful) {
                                         Timber.e(result.exception)
-                                        callback(null)
+                                        callback(null, false)
                                         return@addOnCompleteListener
                                     }
-                                    callback(user)
+                                    callback(user, true)
                                 }
                         return@addOnCompleteListener
                     }
                     val user = result.result!!.toObject(User::class.java)
                     if (user == null) {
                         Timber.e("Parse to current user failed.")
-                        callback(null)
+                        callback(null, false)
                         return@addOnCompleteListener
                     }
                     user.id = result.result!!.id
-                    callback(user) //TODO: Combine coins and items
+                    callback(user, false)
+                }
+    }
+
+    fun updateUsername(username: String, callback: ((success: Boolean, errorMessage: String?) -> Unit)?) {
+        if (auth.currentUser == null) {
+            callback?.invoke(false, "User isn't logged in.")
+            return
+        }
+
+        store.collection("users")
+                .whereEqualTo("username", username)
+                .get()
+                .addOnCompleteListener {result ->
+                    if (!result.isSuccessful) {
+                        Timber.e(result.exception)
+                        callback?.invoke(false, result.exception?.message ?: "An error occured.")
+                        return@addOnCompleteListener
+                    }
+                    if (!result.result!!.isEmpty) {
+                        Timber.e("User $username already exists.")
+                        callback?.invoke(false, "\"$username\" is taken.")
+                        return@addOnCompleteListener
+                    }
+                    store.collection("users")
+                            .document(auth.currentUser!!.uid)
+                            .update("username", username)
+                            .addOnCompleteListener { result ->
+                                if (!result.isSuccessful) {
+                                    Timber.e(result.exception)
+                                    callback?.invoke(false, result.exception?.message ?: "An error occured.")
+                                    return@addOnCompleteListener
+                                }
+                                Timber.v("Updated username to $username")
+                                callback?.invoke(true, null)
+                            }
                 }
     }
 

@@ -9,34 +9,30 @@
     android:orientation="vertical"
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
-    <android.support.design.button.MaterialButton
-        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
-        android:id="@+id/back_button"
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:icon="@drawable/ic_keyboard_arrow_left_black_24dp"
-        android:text="@string/back"
-        android:textAllCaps="false"
-        android:elevation="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        />
+        android:text="Choose a new username:"
+        android:padding="16dp"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"/>
 
     <EditText
-        android:id="@+id/login_input_email"
+        android:id="@+id/main_username"
         android:layout_width="200dp"
         android:layout_height="48dp"
-        android:hint="@string/email"
-        android:inputType="textEmailAddress"
+        android:hint="@string/username"
+        android:inputType="text"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"/>
 
     <android.support.design.button.MaterialButton
         style="@style/Widget.MaterialComponents.Button"
-        android:id="@+id/login_reset_password_button"
+        android:id="@+id/main_username_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:text="@string/reset_password"
+        android:text="@string/confirm"
         android:layout_gravity="center"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"/>

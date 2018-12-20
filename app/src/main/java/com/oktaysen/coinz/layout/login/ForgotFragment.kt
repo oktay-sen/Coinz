@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import com.oktaysen.coinz.R
+import kotlinx.android.synthetic.main.fragment_login_forgot.*
 
 class ForgotFragment: Fragment() {
     var onResetListener:((String) -> Unit)? = null
@@ -15,26 +16,29 @@ class ForgotFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_login_forgot, container, false)
-        view.findViewById<Button>(R.id.back_button).setOnClickListener { onBackListener?.invoke() }
+        return inflater.inflate(R.layout.fragment_login_forgot, container, false)
+    }
 
-        val emailInput = view.findViewById<EditText>(R.id.login_input_email)
-        emailInput.setOnEditorActionListener { _, _, _ ->
-            emailInput.error = null
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        back_button.setOnClickListener { onBackListener?.invoke() }
+
+        login_input_email.setOnEditorActionListener { _, _, _ ->
+            login_input_email.error = null
             return@setOnEditorActionListener false
         }
 
-        view.findViewById<Button>(R.id.login_reset_password_button).setOnClickListener {
+        login_reset_password_button.setOnClickListener {
             var canRegister = true
-            if (emailInput.text.length <=3 || !emailInput.text.contains("@")) {
+            if (login_input_email.text.length <=3 || !login_input_email.text.contains("@")) {
                 canRegister = false
-                emailInput.error = "Enter a valid email"
+                login_input_email.error = "Enter a valid email"
             } else {
-                emailInput.error = null
+                login_input_email.error = null
             }
             if (canRegister)
-                onResetListener?.invoke(emailInput.text.toString())
+                onResetListener?.invoke(login_input_email.text.toString())
         }
-        return view
     }
 }

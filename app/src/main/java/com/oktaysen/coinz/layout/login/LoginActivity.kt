@@ -12,12 +12,12 @@ import com.oktaysen.coinz.layout.main.MainActivity
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Auth
 import android.support.v7.app.AlertDialog
-
-
+import com.oktaysen.coinz.backend.Users
+import timber.log.Timber
 
 
 class LoginActivity : AppCompatActivity() {
-    enum class LoginState { CHOICE, EMAIL_LOGIN, EMAIL_REGISTER, EMAIL_FORGOT }
+    enum class LoginState { CHOICE, EMAIL_LOGIN, EMAIL_REGISTER, EMAIL_FORGOT, USERNAME }
     private var loginState = LoginState.CHOICE
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,20 +92,25 @@ class LoginActivity : AppCompatActivity() {
                 }
                 fragment
             }
-        }
 
-        if (login_wrapper.childCount == 0) {
-            supportFragmentManager.beginTransaction()
-                    .add(R.id.login_wrapper, fragment)
-                    .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out) //TODO: Replace with slide animations
-                    .commit()
+            LoginState.USERNAME -> {
+                val fragment = UsernameFragment()
+                fragment.onUsernameSelectedListener = {username ->
+                    Users().updateUsername(username) { success, errorMessage ->
+                        if (!success) Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+                        else {
+                            val intent = Intent(this, MainActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
+                }
+                fragment
+            }
         }
-        else {
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.login_wrapper, fragment)
-                    .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out) //TODO: Replace with slide animations
-                    .commit()
-        }
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.login_wrapper, fragment)
+                .commitAllowingStateLoss()
         loginState = newState
     }
 
@@ -120,9 +125,19 @@ class LoginActivity : AppCompatActivity() {
 
     private fun onAuthStateChange(isLoggedIn: Boolean) {
         if (isLoggedIn) {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
+            Users().getOrCreateCurrentUser { user, isNewUser ->
+                if (user != null) {
+                    if (isNewUser) {
+                        setLoginState(LoginState.USERNAME)
+                    } else {
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                } else {
+                    Timber.e("Current user not found.")
+                }
+            }
         }
     }
 

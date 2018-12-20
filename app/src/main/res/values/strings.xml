@@ -34,4 +34,8 @@
     <string name="username_explanation">Who do you want to trade with?</string>
     <string name="trade_submit">Trade</string>
     <string name="check_username">Select</string>
+    <string name="username_confirmation">Let\'s go!</string>
+    <string name="username_message">Welcome to Coinz!\nChoose your username:</string>
+    <string name="change_username">Change Username</string>
+    <string name="confirm">Confirm</string>
 </resources>

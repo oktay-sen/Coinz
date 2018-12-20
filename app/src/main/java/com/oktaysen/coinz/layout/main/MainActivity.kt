@@ -101,8 +101,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when (item?.itemId) {
-            R.id.settings -> {
-                return false
+            R.id.change_username -> {
+                UsernameDialog().show(supportFragmentManager, "change_username")
+                return true
             }
             R.id.logout -> {
                 Auth().logOut()
