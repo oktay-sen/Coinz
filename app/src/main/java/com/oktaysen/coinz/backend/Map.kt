@@ -7,7 +7,7 @@ import com.oktaysen.coinz.backend.pojo.Coin
 import timber.log.Timber
 import com.oktaysen.coinz.backend.util.*
 
-class MapInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: FirebaseFirestore) {
+class MapInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: FirebaseFirestore, val registry: ListenerRegistryInstance) {
     fun addTodaysCoinsIfMissing() {
         store
                 .collection("coins")
@@ -42,9 +42,10 @@ class MapInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: Fireb
 
     }
 
-    fun listenToMap(callback: (List<Coin>, List<Coin>, List<Coin>, List<Coin>) -> Unit) {
+    fun listenToMap(callback: (List<Coin>, List<Coin>, List<Coin>, List<Coin>) -> Unit): Int {
         Timber.v("Getting map started.")
-        store
+        return registry.register(
+            store
                 .collection("coins")
                 .whereGreaterThan("date", yesterday())
                 .whereLessThanOrEqualTo("date", today())
@@ -54,9 +55,10 @@ class MapInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: Fireb
                     callback(current, added, modified, removed)
                     if (current.isEmpty()) addTodaysCoinsIfMissing()
                 })
+        )
     }
 
-    fun collectCoin(id: String, callback: ((Boolean) -> Unit)?) {
+    fun collectCoin(id: String, callback: ((success: Boolean) -> Unit)?) {
         if (auth.currentUser == null) {
             callback?.invoke(false)
             return
@@ -87,7 +89,7 @@ class MapInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: Fireb
     }
 }
 
-private val mapInstance:MapInstance = MapInstance(Uni(), FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
+private val mapInstance:MapInstance = MapInstance(Uni(), FirebaseAuth.getInstance(), FirebaseFirestore.getInstance(), ListenerRegistry())
 
 fun Map():MapInstance {
     return mapInstance

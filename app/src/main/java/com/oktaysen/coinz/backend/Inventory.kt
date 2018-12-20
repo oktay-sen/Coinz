@@ -3,6 +3,7 @@ package com.oktaysen.coinz.backend
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.oktaysen.coinz.backend.pojo.Coin
 import com.oktaysen.coinz.backend.pojo.Rates
 import com.oktaysen.coinz.backend.util.*
@@ -10,34 +11,38 @@ import timber.log.Timber
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class InventoryInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: FirebaseFirestore) {
+class InventoryInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: FirebaseFirestore, val registry: ListenerRegistryInstance) {
     var coinsDepositedToday: Int? = null
-    fun listenToWallet(callback: (List<Coin>, List<Coin>, List<Coin>, List<Coin>) -> Unit) {
+    fun listenToWallet(callback: (List<Coin>, List<Coin>, List<Coin>, List<Coin>) -> Unit): Int {
         if (auth.currentUser == null || auth.currentUser?.uid == null)
-            return
-        store.collection("coins")
-                .whereEqualTo("ownerId", auth.currentUser!!.uid)
-                .whereGreaterThan("date", yesterday())
-                .whereLessThanOrEqualTo("date", today())
-                .addSnapshotListener(ProcessedSnapshotListener(callback))
+            return -1
+        return registry.register(
+                store.collection("coins")
+                        .whereEqualTo("ownerId", auth.currentUser!!.uid)
+                        .whereGreaterThan("date", yesterday())
+                        .whereLessThanOrEqualTo("date", today())
+                        .addSnapshotListener(ProcessedSnapshotListener(callback))
+        )
     }
 
-    fun listenToBankAccount(callback: (List<Coin>, List<Coin>, List<Coin>, List<Coin>) -> Unit) {
+    fun listenToBankAccount(callback: (List<Coin>, List<Coin>, List<Coin>, List<Coin>) -> Unit): Int {
         if (auth.currentUser == null || auth.currentUser?.uid == null)
-            return
-        store.collection("users")
-                .document(auth.currentUser!!.uid)
-                .collection("account")
-                .addSnapshotListener(ProcessedSnapshotListener<Coin>{ current, added, modified, removed ->
-                    coinsDepositedToday = current
-                            .filter { coin ->
-                                val today = today().toDate()
-                                val collected = coin.date?.toDate() ?: return@filter false
-                                TimeUnit.HOURS.convert(today.time - collected.time, TimeUnit.MILLISECONDS) < 24
-                            }
-                            .size
-                    callback(current, added, modified, removed)
-                })
+            return -1
+        return registry.register(
+            store.collection("users")
+                    .document(auth.currentUser!!.uid)
+                    .collection("account")
+                    .addSnapshotListener(ProcessedSnapshotListener<Coin>{ current, added, modified, removed ->
+                        coinsDepositedToday = current
+                                .filter { coin ->
+                                    val today = today().toDate()
+                                    val collected = coin.date?.toDate() ?: return@filter false
+                                    TimeUnit.HOURS.convert(today.time - collected.time, TimeUnit.MILLISECONDS) < 24
+                                }
+                                .size
+                        callback(current, added, modified, removed)
+                    })
+        )
     }
 
     fun getDepositedTodayCount(): Int? = coinsDepositedToday
@@ -132,7 +137,7 @@ class InventoryInstance(val uni: UniInstance, val auth: FirebaseAuth, val store:
     }
 }
 
-private val inventoryInstance:InventoryInstance = InventoryInstance(Uni(), FirebaseAuth.getInstance(), FirebaseFirestore.getInstance())
+private val inventoryInstance:InventoryInstance = InventoryInstance(Uni(), FirebaseAuth.getInstance(), FirebaseFirestore.getInstance(), ListenerRegistry())
 
 fun Inventory():InventoryInstance {
     return inventoryInstance

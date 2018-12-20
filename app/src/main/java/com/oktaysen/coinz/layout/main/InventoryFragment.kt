@@ -13,11 +13,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.oktaysen.coinz.R
 import com.oktaysen.coinz.backend.Inventory
+import com.oktaysen.coinz.backend.ListenerRegistry
 import com.oktaysen.coinz.backend.pojo.Coin
 import com.oktaysen.coinz.backend.pojo.Coin.Currency.*
 import com.oktaysen.coinz.backend.pojo.Rates
 import com.oktaysen.coinz.layout.util.ItemAdapter
 import kotlinx.android.synthetic.main.fragment_main_inventory.*
+import timber.log.Timber
 
 class InventoryFragment:Fragment() {
 
@@ -26,6 +28,9 @@ class InventoryFragment:Fragment() {
     var walletDone = false
     var bankDone = false
     var ratesDone = false
+
+    var walletListenerId: Int? = null
+    var bankAccountListenerId: Int? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return layoutInflater.inflate(R.layout.fragment_main_inventory, container, false)
@@ -40,36 +45,40 @@ class InventoryFragment:Fragment() {
         deposit_button.setOnClickListener { Inventory().depositCoins(walletSelected, null) }
 
         updateRefresh()
-        Inventory().listenToWallet { current, _, modified, removed ->
-            walletDone = true
-            updateRefresh()
-            if (current.isEmpty())
-                wallet_empty_message.visibility = View.VISIBLE
-            else
-                wallet_empty_message.visibility = View.GONE
-            walletSelected = walletSelected
-                    .filter { !removed.contains(it) }
-                    .map {
-                        val index = modified.indexOf(it)
-                        if (index > -1) modified[index]
-                        else it
-                    }
-            updateButtonVisibility()
-            wallet_items.adapter = ItemAdapter(current, walletSelected, context!!) { items, item ->
-                walletSelected = items as List<Coin>
+        walletListenerId = Inventory().listenToWallet { current, _, modified, removed ->
+            activity?.runOnUiThread {
+                walletDone = true
+                updateRefresh()
+                if (current.isEmpty())
+                    wallet_empty_message.visibility = View.VISIBLE
+                else
+                    wallet_empty_message.visibility = View.GONE
+                walletSelected = walletSelected
+                        .filter { !removed.contains(it) }
+                        .map {
+                            val index = modified.indexOf(it)
+                            if (index > -1) modified[index]
+                            else it
+                        }
                 updateButtonVisibility()
+                wallet_items.adapter = ItemAdapter(current, walletSelected, context!!) { items, item ->
+                    walletSelected = items
+                    updateButtonVisibility()
+                }
             }
         }
 
-        Inventory().listenToBankAccount { current, _, modified, removed ->
-            bankDone = true
-            updateRefresh()
-            if (current.isEmpty())
-                bank_empty_message.visibility = View.VISIBLE
-            else
-                bank_empty_message.visibility = View.GONE
-            wallet_subtitle.text = "${10 - (Inventory().getDepositedTodayCount()?:0)} deposits left"
-            bank_items.adapter = ItemAdapter(current, null, context!!, null)
+        bankAccountListenerId = Inventory().listenToBankAccount { current, _, modified, removed ->
+            activity?.runOnUiThread {
+                bankDone = true
+                updateRefresh()
+                if (current.isEmpty())
+                    bank_empty_message.visibility = View.VISIBLE
+                else
+                    bank_empty_message.visibility = View.GONE
+                wallet_subtitle.text = "${10 - (Inventory().getDepositedTodayCount()?:0)} deposits left"
+                bank_items.adapter = ItemAdapter(current, null, context!!, null)
+            }
         }
 
         Inventory().getTodaysRates { rates ->
@@ -134,5 +143,18 @@ class InventoryFragment:Fragment() {
             result.setSpan(StyleSpan(Typeface.BOLD), start, start + currencyText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         return result
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Timber.v("onStop")
+        if (walletListenerId != null) {
+            val result = ListenerRegistry().unregister(walletListenerId!!)
+            Timber.v("Wallet listener removed: $result")
+        }
+        if (bankAccountListenerId != null) {
+            val result = ListenerRegistry().unregister(bankAccountListenerId!!)
+            Timber.v("Bank account listener removed: $result")
+        }
     }
 }

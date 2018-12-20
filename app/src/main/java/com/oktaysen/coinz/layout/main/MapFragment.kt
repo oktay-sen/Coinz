@@ -30,6 +30,7 @@ import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.oktaysen.coinz.R
+import com.oktaysen.coinz.backend.ListenerRegistry
 import com.oktaysen.coinz.backend.Map
 import com.oktaysen.coinz.backend.pojo.Coin
 import kotlinx.android.synthetic.main.fragment_main_map.*
@@ -45,6 +46,8 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     private var locationEngine: LocationEngine? = null
     private val markers: MutableMap<Marker, Coin> = mutableMapOf()
     private val markersById: MutableMap<String, Marker> = mutableMapOf()
+
+    private var listenerId: Int? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = layoutInflater.inflate(R.layout.fragment_main_map, container, false)
@@ -136,7 +139,7 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     }
 
     private fun setUpCoins() {
-        Map().listenToMap { coins, added, changed, removed ->
+        listenerId = Map().listenToMap { coins, added, changed, removed ->
             Timber.v("Today's coins are: $coins")
 
             activity?.runOnUiThread {
@@ -224,7 +227,12 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
 
     override fun onStop() {
         super.onStop()
+        Timber.v("onStop")
         map_view.onStop()
+        if (listenerId != null) {
+            val result = ListenerRegistry().unregister(listenerId!!)
+            Timber.v("Map listener removed: $result")
+        }
     }
 
     override fun onLowMemory() {
