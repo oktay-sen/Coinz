@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".layout.main.MainActivity">
 
-    <com.oktaysen.coinz.layout.SwipeToggleViewPager
+    <com.oktaysen.coinz.layout.util.SwipeToggleViewPager
         android:id="@+id/tab_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

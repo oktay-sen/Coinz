@@ -1,4 +1,4 @@
-package com.oktaysen.coinz.layout
+package com.oktaysen.coinz.layout.util
 
 import android.content.Context
 import android.view.MotionEvent
