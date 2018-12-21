@@ -28,8 +28,7 @@ class MapInstance(val uni: UniInstance, val auth: FirebaseAuth, val store: Fireb
                             for (coin in newCoins) {
                                 batch.set(ref.document(coin.id!!), coin)
                             }
-                            batch
-                                    .commit()
+                            batch.commit()
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful)
                                             Timber.v("Added ${newCoins.size} coins to Firestore.")

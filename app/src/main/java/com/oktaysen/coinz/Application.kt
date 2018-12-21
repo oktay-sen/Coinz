@@ -12,6 +12,7 @@ class Application:Application() {
 
         Mapbox.getInstance(this, getString(R.string.mapbox_access_token))
 
+        //From: https://www.youtube.com/watch?v=0BEkVaPlU9A
         Timber.plant(object : Timber.DebugTree() {
             override fun createStackElementTag(element: StackTraceElement): String? {
                 return super.createStackElementTag(element) + ':' + element.lineNumber
