@@ -139,74 +139,77 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
     }
 
     private fun setUpCoins() {
-        listenerId = Map().listenToMap { coins, added, changed, removed ->
-            Timber.v("Today's coins are: $coins")
+        if (listenerId == null) {
+            Timber.v("listenToMap calling")
+            listenerId = Map().listenToMap { coins, added, changed, removed ->
+                activity?.runOnUiThread {
+                    Timber.v("Today's coins are: $coins")
 
-            activity?.runOnUiThread {
+                    val dolrIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_dolr)!!)
+                    val penyIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_peny)!!)
+                    val quidIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_quid)!!)
+                    val shilIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_shil)!!)
 
-                val dolrIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_dolr)!!)
-                val penyIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_peny)!!)
-                val quidIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_quid)!!)
-                val shilIcon = IconFactory.getInstance(context!!).fromBitmap(getBitmap(R.drawable.pin_shil)!!)
+                    val getIcon = { currency: Coin.Currency? ->
+                        when (currency) {
+                            Coin.Currency.DOLR -> dolrIcon
+                            Coin.Currency.SHIL -> shilIcon
+                            Coin.Currency.PENY -> penyIcon
+                            Coin.Currency.QUID -> quidIcon
+                            null -> quidIcon
+                        }
+                    }
 
-                val getIcon = {currency: Coin.Currency? ->
-                    when(currency) {
-                        Coin.Currency.DOLR -> dolrIcon
-                        Coin.Currency.SHIL -> shilIcon
-                        Coin.Currency.PENY -> penyIcon
-                        Coin.Currency.QUID -> quidIcon
-                        null -> quidIcon
-                }}
+                    added.forEach { coin ->
+                        val markerOptions = MarkerOptions()
+                                .position(coin.getLatLng())
+                                .title(coin.getTitle())
+                                .icon(getIcon(coin.currency))
+                        val marker = map?.addMarker(markerOptions)
+                        if (marker == null) {
+                            Timber.e("Marker is null!")
+                        } else {
+                            markers[marker] = coin
+                            markersById[coin.id!!] = marker
+                            Timber.d("Added marker for $coin")
+                        }
+                    }
 
-                added.forEach { coin ->
-                    val markerOptions = MarkerOptions()
-                            .position(coin.getLatLng())
-                            .title(coin.getTitle())
-                            .icon(getIcon(coin.currency))
-                    val marker = map?.addMarker(markerOptions)
-                    if (marker == null) {
-                        Timber.e("Marker is null!")
-                    } else {
+                    changed.forEach { coin ->
+                        val marker = markersById[coin.id!!] ?: return@forEach
                         markers[marker] = coin
-                        markersById[coin.id!!] = marker
-                        Timber.d("Added marker for $coin")
+                        marker.position = coin.getLatLng()
+                        marker.title = coin.getTitle()
+                        marker.icon = getIcon(coin.currency)
+                        Timber.d("Modified marker for $coin")
+                    }
+
+                    removed.forEach { coin ->
+                        val marker = markersById[coin.id!!]
+                        markers.remove(marker)
+                        markersById.remove(coin.id)
+                        marker?.remove()
+                        Timber.d("Removed marker for $coin")
                     }
                 }
-
-                changed.forEach { coin ->
-                    val marker = markersById[coin.id!!] ?: return@forEach
-                    markers[marker] = coin
-                    marker.position = coin.getLatLng()
-                    marker.title = coin.getTitle()
-                    marker.icon = getIcon(coin.currency)
-                    Timber.d("Modified marker for $coin")
-                }
-
-                removed.forEach { coin ->
-                    val marker = markersById[coin.id!!]
-                    markers.remove(marker)
-                    markersById.remove(coin.id)
-                    marker?.remove()
-                    Timber.d("Removed marker for $coin")
-                }
             }
-        }
 
-        //TODO: Remove this listener before release.
-        map!!.setOnMarkerClickListener {marker ->
-            Timber.v("Clicked on ${marker.title}")
-            val coin = markers[marker] ?: return@setOnMarkerClickListener false
-            Timber.v("Clicked on $coin")
-            Map().collectCoin(markers[marker]!!) { success ->
-                Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
-                Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
-                        .setAction("View") {
-                            if (activity is MainActivity)
-                                (activity as MainActivity).navigateTo(R.id.navigation_inventory)
-                        }
-                        .show()
+            //TODO: Remove this listener before release.
+            map!!.setOnMarkerClickListener { marker ->
+                Timber.v("Clicked on ${marker.title}")
+                val coin = markers[marker] ?: return@setOnMarkerClickListener false
+                Timber.v("Clicked on $coin")
+                Map().collectCoin(markers[marker]!!) { success ->
+                    Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
+                    Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
+                            .setAction("View") {
+                                if (activity is MainActivity)
+                                    (activity as MainActivity).navigateTo(R.id.navigation_inventory)
+                            }
+                            .show()
+                }
+                return@setOnMarkerClickListener true
             }
-            return@setOnMarkerClickListener true
         }
     }
 
@@ -231,6 +234,12 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
         map_view.onStop()
         if (listenerId != null) {
             val result = ListenerRegistry().unregister(listenerId!!)
+            if (result) {
+                listenerId = null
+                markers.keys.forEach { it.remove() }
+                markers.clear()
+                markersById.clear()
+            }
             Timber.v("Map listener removed: $result")
         }
     }

@@ -13,6 +13,7 @@ inline fun <reified T:Any>ProcessedSnapshotListener(
         if (exception != null || snapshot == null) {
             Timber.e(exception)
         } else {
+            Timber.v("Received update.")
             val current = snapshot.toObjects(T::class.java)
             val added: MutableList<T> = mutableListOf()
             val modified: MutableList<T> = mutableListOf()
