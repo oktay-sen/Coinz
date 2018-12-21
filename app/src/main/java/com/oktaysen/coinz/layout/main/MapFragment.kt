@@ -193,23 +193,6 @@ class MapFragment: Fragment(), PermissionsListener, LocationEngineListener {
                     }
                 }
             }
-
-            //TODO: Remove this listener before release.
-            map!!.setOnMarkerClickListener { marker ->
-                Timber.v("Clicked on ${marker.title}")
-                val coin = markers[marker] ?: return@setOnMarkerClickListener false
-                Timber.v("Clicked on $coin")
-                Map().collectCoin(markers[marker]!!) { success ->
-                    Timber.v("Collecting coin $coin with id ${coin.id} success: $success")
-                    Snackbar.make(activity!!.findViewById(R.id.container), "Collected ${coin.getTitle()}", Snackbar.LENGTH_LONG)
-                            .setAction("View") {
-                                if (activity is MainActivity)
-                                    (activity as MainActivity).navigateTo(R.id.navigation_inventory)
-                            }
-                            .show()
-                }
-                return@setOnMarkerClickListener true
-            }
         }
     }
 
