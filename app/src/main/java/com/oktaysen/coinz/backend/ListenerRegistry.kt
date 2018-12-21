@@ -3,6 +3,7 @@ package com.oktaysen.coinz.backend
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 
+//Storage for Firestore listeners to be addressed by their id and canceled later.
 class ListenerRegistryInstance {
     private val registrations: MutableMap<Int, ListenerRegistration> = mutableMapOf()
 
