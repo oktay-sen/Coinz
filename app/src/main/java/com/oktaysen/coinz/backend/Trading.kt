@@ -110,8 +110,6 @@ class TradingInstance(val users: UsersInstance, val auth: FirebaseAuth, val stor
                                         userId,
                                         currentUser.username,
                                         toUser.username,
-                                        fromItems.map { it.id!! },
-                                        toItems.map { it.id!! },
                                         Timestamp.now(),
                                         Trade.State.PENDING
                                 )

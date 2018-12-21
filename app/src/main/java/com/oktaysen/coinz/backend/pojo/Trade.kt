@@ -9,10 +9,8 @@ class Trade(
         val toId: String?,
         val fromUsername: String?,
         val toUsername: String?,
-        val fromCoinIds: List<String>,
-        val toCoinIds: List<String>,
         val date: Timestamp?,
         val state: State): Serializable {
-    constructor(): this(null, null, null, null, null, listOf(), listOf(), null, State.PENDING)
+    constructor(): this(null, null, null, null, null, null, State.PENDING)
     enum class State { PENDING, ACCEPTED, CANCELED }
 }
